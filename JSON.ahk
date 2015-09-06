@@ -1,11 +1,11 @@
 /* Class: JSON
  *     JSON lib for AutoHotkey
  * Version:
- *     v1.2.00.00 [updated 03/28/2015 (MM/DD/YYYY)]
+ *     v1.3.00.00 [updated 09/06/2015 (MM/DD/YYYY)]
  * License:
  *     WTFPL [http://wtfpl.net/]
  * Requirements:
- *     AutoHotkey v1.1.21.00+ OR v2.0-a+
+ *     Latest stable version of AutoHotkey or latest AutoHotkey v2.0-alpha
  * Installation:
  *     Use #Include JSON.ahk or #Include <JSON>. Must be copied into a function
  *     library folder for the latter.
@@ -29,7 +29,7 @@ class JSON
 	{
 		static q := Chr(34)
 
-		args := jsonize ? [ JSON.Object, JSON.Array ] : []
+		args := jsonize ? [ this.Object, this.Array ] : []
 		key := "", is_key := false
 		stack := [ tree := [] ]
 		is_arr := { (tree): 1 }
@@ -191,9 +191,9 @@ class JSON
 					throw Exception("Invalid object key.", -1, k ? Format("<Object at 0x{:p}>", &obj) : "<blank>")
 				
 				if !is_array
-					out .= ( ObjGetCapacity([k], 1) ? JSON.Dump(k) : q . k . q ) ; key
+					out .= ( ObjGetCapacity([k], 1) ? this.Dump(k) : q . k . q ) ; key
 					    .  ( indent ? ": " : ":" ) ; token + padding
-				out .= JSON.Dump(v, indent, lvl) ; value
+				out .= this.Dump(v, indent, lvl) ; value
 				    .  ( indent ? ",`n" . indt : "," ) ; token + indent
 			}
 			
@@ -264,15 +264,11 @@ class JSON
 			return ObjDelete(this, FirstKey, LastKey*)
 		}
 
-		Dump(indent:="")
-		{
-			return JSON.Dump(this, indent)
-		}
-		static Stringify := JSON.Object.Dump
-
 		_NewEnum()
 		{
-			static enum := { "Next": JSON.Object._EnumNext }
+			static enum
+			if !IsObject(enum)
+				enum := { "Next": this.base._EnumNext }
 			return { base: enum, enum: ObjNewEnum(this._), obj: this }
 		}
 
@@ -294,14 +290,5 @@ class JSON
 			args.base := this.base
 			return args
 		}
-
-		Dump(indent:="")
-		{
-			return JSON.Dump(this, indent)
-		}
-		static Stringify := JSON.Array.Dump
 	}
-	; Deprecated but maintained for existing scripts using the lib
-	static Parse := JSON.Load ; cast to .Load
-	static Stringify := JSON.Dump ; cast to .Dump
 }
